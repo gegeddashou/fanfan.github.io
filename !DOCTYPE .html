@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixieLens Photography</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+        
+        :root {
+            --primary: #E37383; /* Soft pink */
+            --secondary: #F8B5C5; /* Lighter pink */
+            --accent: #FFE5E9; /* Very light pink */
+            --light: #FFF9FA; /* Off-white pink */
+            --dark: #B0578D; /* Deep mauve */
+            --text: #5E4A4F; /* Soft brown for text */
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8F9FA;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+        
+        .elegant-title {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .photo-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #E8F1F2 0%, #FFFFFF 100%);
+        }
+        
+        .floating {
+            animation: floating 6s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translate(0,  0px); }
+            50%  { transform: translate(0, 15px); }
+            100%   { transform: translate(0, -0px); }   
+        }
+        
+        .hover-zoom {
+            transition: transform 0.5s ease;
+        }
+        
+        .hover-zoom:hover {
+            transform: scale(1.03);
+        }
+        
+        .section-divider {
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--dark) 100%);
+        }
+        
+        /* Slideshow styles */
+        .slideshow-container {
+            position: relative;
+            max-width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .slide {
+            display: none;
+            animation: fade 1.5s ease-in-out;
+        }
+        
+        @keyframes fade {
+            from {opacity: .4}
+            to {opacity: 1}
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 30px;
+        }
+        
+        .dot {
+            height: 15px;
+            width: 15px;
+            margin: 0 5px;
+            background-color: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+            cursor: pointer;
+        }
+        
+        .dot.active {
+            background-color: white;
+        }
+        
+        /* Language switcher */
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .language-btn {
+            padding: 8px 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .language-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Pulse animation */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Bounce animation */
+        .bounce {
+            animation: bounce 3s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Floating elements */
+        .floating-element {
+            animation: floating-element 8s ease-in-out infinite;
+        }
+        
+        @keyframes floating-element {
+            0% { transform: translate(0,  0px) rotate(0deg); }
+            50%  { transform: translate(10px, 15px) rotate(5deg); }
+            100%   { transform: translate(0, 0px) rotate(0deg); }   
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Language Switcher -->
+    <div class="language-switcher flex">
+        <button class="language-btn active" data-lang="en">EN</button>
+        <button class="language-btn" data-lang="zh">中文</button>
+        <button class="language-btn" data-lang="nl">NL</button>
+    </div>
+
+    <!-- Header -->
+    <header class="relative overflow-hidden gradient-bg py-16">
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="elegant-title text-5xl md:text-6xl font-bold text-gray-800 mb-4" data-translate="title">PixieLens</h1>
+                    <h2 class="text-2xl text-gray-600 mb-6" data-translate="subtitle">Magical Photography for Cosplay & Portraits</h2>
+                    <p class="text-lg text-gray-700 mb-8" data-translate="header-text">
+                        Specializing in cosplay, graduation, and portrait photography that brings out your unique personality and style. Based in the Netherlands.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#portfolio" class="bg-[var(--primary)] hover:bg-[var(--dark)] text-white px-6 py-3 rounded-md shadow-md transition-all flex items-center pulse">
+                            <i class="fas fa-camera mr-2"></i> <span data-translate="portfolio-btn">View Portfolio</span>
+                        </a>
+                        <a href="#contact" class="bg-white hover:bg-gray-100 text-[#4A6FA5] border border-gray-200 px-6 py-3 rounded-md shadow-sm transition-all flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> <span data-translate="book-btn">Book a Session</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-3/4 max-w-md">
+                        <div class="absolute -top-6 -left-6 w-full h-full border-4 border-[#4FC3A1] rounded-lg z-0 floating-element"></div>
+                        <div class="relative rounded-lg overflow-hidden hover-zoom z-10">
+                            <img src="https://images.unsplash.com/photo-1554080353-a576cf803bda?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Photographer at work" class="w-full h-auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Slideshow Section -->
+    <section class="py-12 bg-[var(--dark)] text-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="elegant-title text-4xl font-bold mb-4" data-translate="featured">Featured Works</h2>
+                <div class="section-divider mx-auto"></div>
+            </div>
+            
+            <div class="slideshow-container max-w-5xl mx-auto">
+                <!-- Slide 1 -->
+                <div class="slide active">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" style="width:100%">
+                    <div class="slide-content">
+                        <h3 class="text-2xl font-bold mb-2" data-translate="slide1-title">Corporate Team Photography</h3>
+                        <p class="text-lg" data-translate="slide1-desc">Professional team photos that showcase your company culture</p>
+                    </div>
+                </div>
+                
+                <!-- Slide 2 -->
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1529333166447-4f1c5c0d0ab5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" style="width:100%">
+                    <div class="slide-content">
+                        <h3 class="text-2xl font-bold mb-2" data-translate="slide2-title">Wedding Photography</h3>
+                        <p class="text-lg" data-translate="slide2-desc">Capturing the most precious moments of your special day</p>
+                    </div>
+                </div>
+                
+                <!-- Slide 3 -->
+                <div class="slide">
+                    <img src="https://images.unsplash.com/photo-1493863641943-9b68992a8d07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80" style="width:100%">
+                    <div class="slide-content">
+                        <h3 class="text-2xl font-bold mb-2" data-translate="slide3-title">Product Photography</h3>
+                        <p class="text-lg" data-translate="slide3-desc">Showcase your products in the best possible light</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <span class="dot active" data-slide="0"></span> 
+                    <span class="dot" data-slide="1"></span> 
+                    <span class="dot" data-slide="2"></span> 
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="elegant-title text-4xl font-bold text-gray-800 mb-4" data-translate="about-title">About Me</h2>
+                <div class="section-divider mx-auto"></div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/3 mb-10 md:mb-0 flex justify-center">
+                    <div class="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-xl floating">
+                        <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&h=400&q=80" alt="Photographer" class="w-full h-full object-cover">
+                    </div>
+                </div>
+                <div class="md:w-2/3 md:pl-12">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4" data-translate="about-name">Alex Morgan, Professional Photographer</h3>
+                    <p class="text-lg text-gray-700 mb-6" data-translate="about-text1">
+                        With over 10 years of experience behind the lens, I specialize in creating timeless imagery that captures the essence of my subjects. My approach blends technical precision with artistic intuition to deliver photographs that feel both professional and deeply personal.
+                    </p>
+                    <p class="text-lg text-gray-700 mb-8" data-translate="about-text2">
+                        Whether it's a corporate event, family portrait, or product shoot, I bring the same dedication to quality and attention to detail that has earned me recognition from clients across multiple industries.
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="bg-[var(--accent)] text-[var(--dark)] px-4 py-2 rounded-full text-sm font-medium" data-translate="skill1">Cosplay Photography</span>
+                        <span class="bg-[#FFD6E7] text-[#8A4F7D] px-4 py-2 rounded-full text-sm font-medium" data-translate="skill2">Graduation Photos</span>
+                        <span class="bg-[#FFD6E7] text-[#8A4F7D] px-4 py-2 rounded-full text-sm font-medium" data-translate="skill3">Portrait Sessions</span>
+                        <span class="bg-[#FFD6E7] text-[#8A4F7D] px-4 py-2 rounded-full text-sm font-medium" data-translate="skill4">Creative Editing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Gallery -->
+    <section id="portfolio" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="elegant-title text-4xl font-bold text-gray-800 mb-4" data-translate="portfolio-title">Portfolio</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="text-lg text-gray-600 mt-6 max-w-2xl mx-auto" data-translate="portfolio-desc">
+                    Explore my diverse portfolio showcasing different styles and subjects
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Photo 1 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Portrait" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo1-title">Executive Portrait</h3>
+                                <p class="text-gray-200" data-translate="photo1-desc">Corporate headshot with natural lighting</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photo 2 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1529333166447-4f1c5c0d0ab5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Wedding" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo2-title">Wedding Moment</h3>
+                                <p class="text-gray-200" data-translate="photo2-desc">Emotional ceremony capture</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photo 3 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Corporate" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo3-title">Team Photo</h3>
+                                <p class="text-gray-200" data-translate="photo3-desc">Corporate team building session</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photo 4 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1493863641943-9b68992a8d07?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Product" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo4-title">Product Showcase</h3>
+                                <p class="text-gray-200" data-translate="photo4-desc">Lifestyle product photography</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photo 5 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1470114716159-e389f8712fda?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Nature" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo5-title">Nature's Beauty</h3>
+                                <p class="text-gray-200" data-translate="photo5-desc">Landscape photography at golden hour</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Photo 6 -->
+                <div class="photo-card">
+                    <div class="relative overflow-hidden h-80">
+                        <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" alt="Family" class="w-full h-full object-cover hover-zoom">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-6 opacity-0 hover:opacity-100 transition-opacity duration-300">
+                            <div>
+                                <h3 class="text-xl font-semibold text-white" data-translate="photo6-title">Family Bonds</h3>
+                                <p class="text-gray-200" data-translate="photo6-desc">Candid family portrait session</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16">
+                <a href="#" class="inline-block bg-[#4A6FA5] hover:bg-[#3A5A8F] text-white px-8 py-3 rounded-md shadow-md transition-all bounce">
+                    <span data-translate="view-more">View Complete Portfolio</span> <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="elegant-title text-4xl font-bold text-gray-800 mb-4" data-translate="testimonials-title">Client Testimonials</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="text-lg text-gray-600 mt-6 max-w-2xl mx-auto" data-translate="testimonials-desc">
+                    What my clients say about working with me
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Sarah K." class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Sarah K.</h4>
+                            <p class="text-sm text-gray-500" data-translate="testimonial1-role">Marketing Director</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4" data-translate="testimonial1-text">
+                        "Alex captured our company's essence perfectly in the corporate portraits. The images have elevated our brand presence across all platforms."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/men/42.jpg" alt="James L." class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">James L.</h4>
+                            <p class="text-sm text-gray-500" data-translate="testimonial2-role">Wedding Client</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4" data-translate="testimonial2-text">
+                        "Our wedding photos are absolutely stunning. Alex captured every important moment with such artistry and attention to detail."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-gray-50 p-8 rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                            <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Emma R." class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Emma R.</h4>
+                            <p class="text-sm text-gray-500" data-translate="testimonial3-role">Small Business Owner</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4" data-translate="testimonial3-text">
+                        "The product photography Alex did for my online store increased conversions by 40%. Professional, creative, and excellent value."
+                    </p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="elegant-title text-4xl font-bold text-gray-800 mb-4" data-translate="contact-title">Get In Touch</h2>
+                <div class="section-divider mx-auto"></div>
+                <p class="text-lg text-gray-600 mt-6 max-w-2xl mx-auto" data-translate="contact-desc">
+                    Ready to discuss your photography needs? Reach out for bookings or inquiries.
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="md:flex">
+                    <div class="md:w-1/2 bg-[var(--dark)] p-10 text-white">
+                        <h3 class="text-2xl font-bold mb-6" data-translate="contact-info">Contact Information</h3>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div class="flex items-start">
+                                <i class="fas fa-map-marker-alt mt-1 mr-4 text-[#4FC3A1]"></i>
+                                <div>
+                                    <h4 class="font-semibold" data-translate="address-title">Studio Address</h4>
+                                    <p class="text-gray-300" data-translate="address">123 Photography Lane, Creative District, NY 10001</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-envelope mt-1 mr-4 text-[#4FC3A1]"></i>
+                                <div>
+                                    <h4 class="font-semibold">Email</h4>
+                                    <p class="text-gray-300">hello@lensandlight.com</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <i class="fas fa-phone-alt mt-1 mr-4 text-[#4FC3A1]"></i>
+                                <div>
+                                    <h4 class="font-semibold" data-translate="phone-title">Phone</h4>
+                                    <p class="text-gray-300">+1 (555) 123-4567</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold mb-4" data-translate="follow-title">Follow My Work</h4>
+                            <div class="flex space-x-4">
+                                <a href="#" class="w-10 h-10 rounded-full bg-[var(--primary)] hover:bg-[var(--dark)] flex items-center justify-center transition-all">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                                    <i class="fab fa-500px"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:w-1/2 p-10">
+                        <form class="space-y-6">
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium" for="name" data-translate="form-name">Your Name</label>
+                                <input type="text" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A6FA5] focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium" for="email" data-translate="form-email">Email Address</label>
+                                <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A6FA5] focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium" for="service" data-translate="form-service">Service Needed</label>
+                                <select id="service" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A6FA5] focus:border-transparent">
+                                    <option value="" data-translate="form-select">Select a service</option>
+                                    <option value="portrait" data-translate="form-portrait">Portrait Photography</option>
+                                    <option value="wedding" data-translate="form-wedding">Wedding Photography</option>
+                                    <option value="corporate" data-translate="form-corporate">Corporate Photography</option>
+                                    <option value="product" data-translate="form-product">Product Photography</option>
+                                    <option value="other" data-translate="form-other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2 font-medium" for="message" data-translate="form-message">Your Message</label>
+                                <textarea id="message" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A6FA5] focus:border-transparent"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-[#4A6FA5] hover:bg-[#3A5A8F] text-white py-3 px-6 rounded-lg transition-all flex items-center justify-center font-medium">
+                                <span data-translate="form-submit">Send Message</span> <i class="fas fa-paper-plane ml-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--dark)] text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-8 md:mb-0">
+                    <h3 class="elegant-title text-2xl font-bold mb-4">Lens & Light</h3>
+                    <p class="text-gray-400 max-w-xs" data-translate="footer-desc">
+                        Professional photography services for individuals and businesses. Capturing moments that matter.
+                    </p>
+                </div>
+                
+                <div class="mb-8 md:mb-0">
+                    <h4 class="font-semibold text-lg mb-4" data-translate="footer-links">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-translate="footer-home">Home</a></li>
+                        <li><a href="#portfolio" class="text-gray-400 hover:text-white transition-colors" data-translate="footer-portfolio">Portfolio</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors" data-translate="footer-about">About</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors" data-translate="footer-contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4" data-translate="footer-connect">Connect</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-[#166088] hover:bg-[#4FC3A1] flex items-center justify-center transition-all">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400">hello@lensandlight.com</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500">
+                <p data-translate="footer-copyright">&copy; 2023 Lens & Light Photography. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-[var(--primary)] text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-[var(--dark)]">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Language translation data
+        const translations = {
+            en: {
+                "title": "PixieLens",
+                "subtitle": "Magical Photography for Cosplay & Portraits",
+                "header-text": "Specializing in cosplay, graduation, and portrait photography that brings out your unique personality and style. Based in the Netherlands.",
+                "portfolio-btn": "View Portfolio",
+                "book-btn": "Book a Session",
+                "featured": "Featured Works",
+                "slide1-title": "Cosplay Photography",
+                "slide1-desc": "Bringing your favorite characters to life with creative photography",
+                "slide2-title": "Graduation Photos",
+                "slide2-desc": "Celebrating your academic achievements with beautiful portraits",
+                "slide3-title": "Creative Portraits",
+                "slide3-desc": "Showcasing your unique personality through artistic photography",
+                "about-title": "About Me",
+                "about-name": "Karin, Creative Photographer",
+                "about-text1": "With a passion for creative photography, I specialize in capturing the magic of cosplay and the beauty of personal portraits. My approach combines technical skills with a playful, artistic touch to create images that reflect your unique style.",
+                "about-text2": "Whether it's bringing fantasy characters to life, celebrating graduation milestones, or creating stunning personal portraits, I focus on making every photoshoot a fun and memorable experience.",
+                "skill1": "Cosplay Photography",
+                "skill2": "Graduation Photos",
+                "skill3": "Portrait Sessions",
+                "skill4": "Creative Editing",
+                "portfolio-title": "Portfolio",
+                "portfolio-desc": "Explore my diverse portfolio showcasing different styles and subjects",
+                "photo1-title": "Executive Portrait",
+                "photo1-desc": "Corporate headshot with natural lighting",
+                "photo2-title": "Wedding Moment",
+                "photo2-desc": "Emotional ceremony capture",
+                "photo3-title": "Team Photo",
+                "photo3-desc": "Corporate team building session",
+                "photo4-title": "Product Showcase",
+                "photo4-desc": "Lifestyle product photography",
+                "photo5-title": "Nature's Beauty",
+                "photo5-desc": "Landscape photography at golden hour",
+                "photo6-title": "Family Bonds",
+                "photo6-desc": "Candid family portrait session",
+                "view-more": "View Complete Portfolio",
+                "testimonials-title": "Client Testimonials",
+                "testimonials-desc": "What my clients say about working with me",
+                "testimonial1-role": "Marketing Director",
+                "testimonial1-text": "\"Alex captured our company's essence perfectly in the corporate portraits. The images have elevated our brand presence across all platforms.\"",
+                "testimonial2-role": "Wedding Client",
+                "testimonial2-text": "\"Our wedding photos are absolutely stunning. Alex captured every important moment with such artistry and attention to detail.\"",
+                "testimonial3-role": "Small Business Owner",
+                "testimonial3-text": "\"The product photography Alex did for my online store increased conversions by 40%. Professional, creative, and excellent value.\"",
+                "contact-title": "Get In Touch",
+                "contact-desc": "Ready to discuss your photography needs? Reach out for bookings or inquiries.",
+                "contact-info": "Contact Information",
+                "address-title": "Studio Address",
+                "address": "Bornsesteeg 20,Wageningen,Netherland",
+                "phone-title": "Phone",
+                "follow-title": "Follow My Work",
+                "form-name": "Your Name",
+                "form-email": "Email Address",
+                "form-service": "Service Needed",
+                "form-select": "Select a service",
+                "form-portrait": "Portrait Photography",
+                "form-wedding": "Wedding Photography",
+                "form-corporate": "Corporate Photography",
+                "form-product": "Product Photography",
+                "form-other": "Other",
+                "form-message": "Your Message",
+                "form-submit": "Send Message",
+                "footer-desc": "Professional photography services for individuals and businesses. Capturing moments that matter.",
+                "footer-links": "Quick Links",
+                "footer-home": "Home",
+                "footer-portfolio": "Portfolio",
+                "footer-about": "About",
+                "footer-contact": "Contact",
+                "footer-connect": "Connect",
+                "footer-copyright": "© 2023 Lens & Light Photography. All rights reserved."
+            },
+            zh: {
+                "title": "甜甜的小屋",
+                "subtitle": "专业摄影讲述每个故事",
+                "header-text": "用艺术视角捕捉真实瞬间。专注于肖像、活动和商业摄影，创造经得起时间考验的作品。",
+                "portfolio-btn": "查看作品集",
+                "book-btn": "预约拍摄",
+                "featured": "精选作品",
+                "slide1-title": "企业团队摄影",
+                "slide1-desc": "展示公司文化的专业团队照片",
+                "slide2-title": "婚礼摄影",
+                "slide2-desc": "捕捉您特殊日子里最珍贵的时刻",
+                "slide3-title": "产品摄影",
+                "slide3-desc": "以最佳方式展示您的产品",
+                "about-title": "关于我",
+                "about-name": "Karin, 专业摄影师",
+                "about-text1": "拥有超过10年的摄影经验，我专注于创作能够捕捉拍摄对象本质的永恒影像。我的方法融合了技术精确性和艺术直觉，提供既专业又极具个人特色的照片。",
+                "about-text2": "无论是企业活动、家庭肖像还是产品拍摄，我都秉持同样的质量承诺和对细节的关注，这使我赢得了跨行业客户的认可。",
+                "skill1": "人像摄影",
+                "skill2": "活动拍摄",
+                "skill3": "商业摄影",
+                "skill4": "照片编辑",
+                "portfolio-title": "作品集",
+                "portfolio-desc": "探索展示不同风格和主题的多样化作品集",
+                "photo1-title": "高管肖像",
+                "photo1-desc": "自然光下的专业形象照",
+                "photo2-title": "婚礼时刻",
+                "photo2-desc": "情感丰富的仪式抓拍",
+                "photo3-title": "团队照片",
+                "photo3-desc": "企业团队建设活动",
+                "photo4-title": "产品展示",
+                "photo4-desc": "生活方式产品摄影",
+                "photo5-title": "自然之美",
+                "photo5-desc": "黄金时段的风景摄影",
+                "photo6-title": "家庭纽带",
+                "photo6-desc": "自然家庭肖像拍摄",
+                "view-more": "查看完整作品集",
+                "testimonials-title": "客户评价",
+                "testimonials-desc": "客户对我的工作有何评价",
+                "testimonial1-role": "市场总监",
+                "testimonial1-text": "\"Alex在企业肖像中完美捕捉了我们公司的精髓。这些照片提升了我们在所有平台上的品牌形象。\"",
+                "testimonial2-role": "婚礼客户",
+                "testimonial2-text": "\"我们的婚礼照片绝对惊艳。Alex以如此的艺术性和对细节的关注捕捉了每一个重要时刻。\"",
+                "testimonial3-role": "小企业主",
+                "testimonial3-text": "\"Alex为我的网店拍摄的产品照片使转化率提高了40%。专业、创意且物超所值。\"",
+                "contact-title": "联系我们",
+                "contact-desc": "准备好讨论您的摄影需求了吗？联系我们进行预约或咨询。",
+                "contact-info": "联系信息",
+                "address-title": "工作室地址",
+                "address": "摄影路123号，创意区，纽约10001",
+                "phone-title": "电话",
+                "follow-title": "关注我的作品",
+                "form-name": "您的姓名",
+                "form-email": "电子邮箱",
+                "form-service": "所需服务",
+                "form-select": "选择服务",
+                "form-portrait": "人像摄影",
+                "form-wedding": "婚礼摄影",
+                "form-corporate": "企业摄影",
+                "form-product": "产品摄影",
+                "form-other": "其他",
+                "form-message": "您的留言",
+                "form-submit": "发送信息",
+                "footer-desc": "为个人和企业提供专业摄影服务。捕捉重要时刻。",
+                "footer-links": "快速链接",
+                "footer-home": "首页",
+                "footer-portfolio": "作品集",
+                "footer-about": "关于",
+                "footer-contact": "联系",
+                "footer-connect": "社交",
+                "footer-copyright": "© 2023 镜头与光影摄影。保留所有权利。"
+            },
+            nl: {
+                "title": "FotoBasis",
+                "subtitle": "Professionele Fotografie voor Elk Verhaal",
+                "header-text": "Het vastleggen van authentieke momenten met artistieke visie. Gespecialiseerd in portretten, evenementen en commerciële fotografie die de tand des tijds doorstaat.",
+                "portfolio-btn": "Bekijk Portfolio",
+                "book-btn": "Boek een Sessie",
+                "featured": "Uitgelichte Werken",
+                "slide1-title": "Bedrijfsfotografie",
+                "slide1-desc": "Professionele teamfoto's die uw bedrijfscultuur weergeven",
+                "slide2-title": "Trouwfotografie",
+                "slide2-desc": "Het vastleggen van de meest kostbare momenten van uw speciale dag",
+                "slide3-title": "Productfotografie",
+                "slide3-desc": "Laat uw producten zien in het beste licht",
+                "about-title": "Over Mij",
+                "about-name": "Karin, Professionele Fotograaf",
+                "about-text1": "Met meer dan 10 jaar ervaring achter de lens, ben ik gespecialiseerd in het creëren van tijdloze beelden die de essentie van mijn onderwerpen vastleggen. Mijn aanpak combineert technische precisie met artistieke intuïtie om foto's te leveren die zowel professioneel als diep persoonlijk aanvoelen.",
+                "about-text2": "Of het nu gaat om een bedrijfsevenement, familieportret of productshoot, ik breng dezelfde toewijding aan kwaliteit en aandacht voor detail die mij erkenning heeft opgeleverd van klanten in verschillende branches.",
+                "skill1": "Portretfotografie",
+                "skill2": "Evenementendekking",
+                "skill3": "Commercieel Werk",
+                "skill4": "Foto Bewerking",
+                "portfolio-title": "Portfolio",
+                "portfolio-desc": "Ontdek mijn diverse portfolio met verschillende stijlen en onderwerpen",
+                "photo1-title": "Zakelijk Portret",
+                "photo1-desc": "Bedrijfsportret met natuurlijk licht",
+                "photo2-title": "Trouwmoment",
+                "photo2-desc": "Emotionele ceremonie vastgelegd",
+                "photo3-title": "Teamfoto",
+                "photo3-desc": "Bedrijfsuitje sessie",
+                "photo4-title": "Productpresentatie",
+                "photo4-desc": "Levensstijl productfotografie",
+                "photo5-title": "Natuurschoonheid",
+                "photo5-desc": "Landschapsfotografie tijdens gouden uur",
+                "photo6-title": "Familiebanden",
+                "photo6-desc": "Ongedwongen familieportretsessie",
+                "view-more": "Bekijk Volledig Portfolio",
+                "testimonials-title": "Klantenrecensies",
+                "testimonials-desc": "Wat mijn klanten zeggen over samenwerken met mij",
+                "testimonial1-role": "Marketingdirecteur",
+                "testimonial1-text": "\"Alex heeft de essentie van ons bedrijf perfect vastgelegd in de zakelijke portretten. De beelden hebben onze merkpresentatie op alle platforms verhoogd.\"",
+                "testimonial2-role": "Trouwklant",
+                "testimonial2-text": "\"Onze trouwfoto's zijn absoluut prachtig. Alex heeft elk belangrijk moment vastgelegd met zoveel artisticiteit en aandacht voor detail.\"",
+                "testimonial3-role": "Kleinbedrijfseigenaar",
+                "testimonial3-text": "\"De productfotografie die Alex voor mijn webshop heeft gedaan, heeft de conversie met 40% verhoogd. Professioneel, creatief en uitstekende waarde.\"",
+                "contact-title": "Neem Contact Op",
+                "contact-desc": "Klaar om uw fotografiebehoeften te bespreken? Neem contact op voor boekingen of vragen.",
+                "contact-info": "Contactgegevens",
+                "address-title": "Studio Adres",
+                "address": "Fotografie Laan 123, Creatieve Wijk, NY 10001",
+                "phone-title": "Telefoon",
+                "follow-title": "Volg Mijn Werk",
+                "form-name": "Uw Naam",
+                "form-email": "E-mailadres",
+                "form-service": "Benodigde Dienst",
+                "form-select": "Selecteer een dienst",
+                "form-portrait": "Portretfotografie",
+                "form-wedding": "Trouwfotografie",
+                "form-corporate": "Zakelijke Fotografie",
+                "form-product": "Productfotografie",
+                "form-other": "Anders",
+                "form-message": "Uw Bericht",
+                "form-submit": "Verstuur Bericht",
+                "footer-desc": "Professionele fotografiediensten voor particulieren en bedrijven. Het vastleggen van momenten die ertoe doen.",
+                "footer-links": "Snelle Links",
+                "footer-home": "Home",
+                "footer-portfolio": "Portfolio",
+                "footer-about": "Over",
+                "footer-contact": "Contact",
+                "footer-connect": "Volgen",
+                "footer-copyright": "© 2023 Lens & Licht Fotografie. Alle rechten voorbehouden."
+            }
+        };
+
+        // Language switcher functionality
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active button
+                document.querySelectorAll('.language-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Get selected language
+                const lang = this.dataset.lang;
+                
+                // Update all translatable elements
+                document.querySelectorAll('[data-translate]').forEach(el => {
+                    const key = el.dataset.translate;
+                    if (translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                
+                // Update HTML lang attribute
+                document.documentElement.lang = lang;
+            });
+        });
+
+        // Slideshow functionality
+        let slideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        
+        function showSlide(n) {
+            // Wrap around if needed
+            if (n >= slides.length) slideIndex = 0;
+            if (n < 0) slideIndex = slides.length - 1;
+            
+            // Hide all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            // Deactivate all dots
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Show current slide and activate dot
+            slides[slideIndex].classList.add('active');
+            dots[slideIndex].classList.add('active');
+        }
+        
+        // Auto advance slides
+        function autoSlide() {
+            slideIndex++;
+            showSlide(slideIndex);
+        }
+        
+        // Set interval for auto sliding
+        let slideInterval = setInterval(autoSlide, 5000);
+        
+        // Dot navigation
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                slideIndex = index;
+                showSlide(slideIndex);
+                
+                // Reset auto slide timer
+                clearInterval(slideInterval);
+                slideInterval = setInterval(autoSlide, 5000);
+            });
+        });
+        
+        // Initial slide show
+        showSlide(slideIndex);
+
+        // Back to Top Button
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add floating animation to random elements
+        document.querySelectorAll('.floating-element').forEach((el, index) => {
+            // Randomize animation duration and delay
+            const duration = 8 + Math.random() * 4;
+            const delay = Math.random() * 5;
+            
+            el.style.animation = `floating-element ${duration}s ease-in-out ${delay}s infinite`;
+        });
+    </script>
+</body>
+</html>
